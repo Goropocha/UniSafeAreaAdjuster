@@ -141,9 +141,12 @@ public class SafeAreaAdjuster : MonoBehaviour {
   // 横持ちか
   private bool isLandscape {
     get {
+      // Editor上での操作時は isPortrait から判定する
       if(orientationType != OrientationType.Auto) {
         return !isPortrait;
       }
+
+      // 実行時は解像度から判定
       var width = UnityEngine.Screen.width;
       var height = UnityEngine.Screen.height;
       
