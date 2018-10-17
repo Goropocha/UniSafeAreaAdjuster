@@ -38,6 +38,9 @@ public class SafeAreaAdjuster : MonoBehaviour {
     if (simulateOnPlay) {
       orientationType = OrientationType.Auto;
       simulateType = getSimulateTypeFromCurrentResolution();
+      if (simulateType == SimulateType.None) {
+        return;
+      }
       safeArea = getSimulationSafeArea(simulateType);
       screenSize = getSimulationResolution(simulateType);
       Apply();
