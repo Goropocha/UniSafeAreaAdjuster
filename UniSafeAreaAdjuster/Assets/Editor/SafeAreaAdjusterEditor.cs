@@ -3,46 +3,48 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-//*************************************************************************************************
-/// <summary>
-/// SafeAreaAdjuster Inspector拡張クラス
-/// </summary>
-//*************************************************************************************************
-[CustomEditor(typeof(SafeAreaAdjuster))]
-public class SafeAreaAdjusterEditor : Editor {
-  private bool toggle;
-  private SafeAreaAdjuster comp;
-
+namespace SafeArea {
   //*************************************************************************************************
   /// <summary>
-  /// 表示時の通知
+  /// SafeAreaAdjuster Inspector拡張クラス
   /// </summary>
   //*************************************************************************************************
-  void OnEnable() {
-    comp = target as SafeAreaAdjuster;
-  }
+  [CustomEditor(typeof(SafeAreaAdjuster))]
+  public class SafeAreaAdjusterEditor : Editor {
+    private bool toggle;
+    private SafeAreaAdjuster comp;
 
-  //*************************************************************************************************
-  /// <summary>
-  /// Inspector 描画
-  /// </summary>
-  //*************************************************************************************************
-  public override void OnInspectorGUI() {
-    base.OnInspectorGUI();
+    //*************************************************************************************************
+    /// <summary>
+    /// 表示時の通知
+    /// </summary>
+    //*************************************************************************************************
+    void OnEnable() {
+      comp = target as SafeAreaAdjuster;
+    }
 
-    EditorGUI.BeginChangeCheck();
+    //*************************************************************************************************
+    /// <summary>
+    /// Inspector 描画
+    /// </summary>
+    //*************************************************************************************************
+    public override void OnInspectorGUI() {
+      base.OnInspectorGUI();
 
-    // toggle をマウスでクリックして値を変更する
-    EditorGUILayout.Space();
-    toggle = EditorGUILayout.ToggleLeft("Editor上で即シミュレート", toggle);
+      EditorGUI.BeginChangeCheck();
 
-    // toggle の値が変更されるたびに true になる
-    if (EditorGUI.EndChangeCheck()) {
-      if (toggle) {
-        comp.SimulateAtEditor();
-      } else {
-        comp.Setup();
-        comp.Apply();
+      // toggle をマウスでクリックして値を変更する
+      EditorGUILayout.Space();
+      toggle = EditorGUILayout.ToggleLeft("Editor上で即シミュレート", toggle);
+
+      // toggle の値が変更されるたびに true になる
+      if (EditorGUI.EndChangeCheck()) {
+        if (toggle) {
+          comp.SimulateAtEditor();
+        } else {
+          comp.Setup();
+          comp.Apply();
+        }
       }
     }
   }
