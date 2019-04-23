@@ -1,4 +1,4 @@
-﻿//#define Unity2018_3_2orOlder // Unity 2018.3.2以前の場合はTrueにしてください
+﻿//#define Unity2018_3_2orOlder // Uncomment if you use Unity 2018.3.2 or older
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -7,13 +7,13 @@ using UnityEngine;
 namespace SafeArea {
   //*************************************************************************************************
   /// <summary>
-  /// セーフエリア調整クラス
+  /// Safe Area Adjuster
   /// </summary>
   //*************************************************************************************************
   public class SafeAreaAdjuster : MonoBehaviour {
 
     private RectTransform panelRectTrans;
-    /// <summary>調整対象のRectTransfrom</summary>
+    /// <summary>Target RectTransfrom</summary>
     public RectTransform PanelRectTrans {
       get {
         if (panelRectTrans == null) {
@@ -23,7 +23,7 @@ namespace SafeArea {
       }
     }
 
-    [SerializeField, Header("スケールを自動調整する")]
+    [SerializeField]
     private bool isAutoScale;
 
     private Rect safeArea;
@@ -31,12 +31,12 @@ namespace SafeArea {
 
     //*************************************************************************************************
     /// <summary>
-    /// 起動時処理
+    /// Initialize
     /// </summary>
     //*************************************************************************************************
     void Awake() {
 #if UNITY_EDITOR
-      // 実行時のデバッグ用
+      // For Debug at Play Mode
       if (simulateOnPlay) {
         orientationType = OrientationType.Auto;
         simulateType = getSimulateTypeFromCurrentResolution();
@@ -45,37 +45,31 @@ namespace SafeArea {
         }
         safeArea = getSimulationSafeArea(simulateType);
         screenSize = getSimulationResolution(simulateType);
-        Apply();
+        Apply(isInitScreenSize: false);
         return;
       }
 #endif
-      Setup();
       Apply();
     }
 
     //*************************************************************************************************
     /// <summary>
-    /// 初期化処理
+    /// Apply Safe Area to Screen
     /// </summary>
+    /// <param name="isInitScreenSize">True: Initialize ScreenSize</param>
     //*************************************************************************************************
     [Conditional("UNITY_EDITOR"), Conditional("UNITY_IOS")]
-    public void Setup() {
-      safeArea = UnityEngine.Screen.safeArea;
+    public void Apply(bool isInitScreenSize = true) {
+      if (isInitScreenSize) {
+        safeArea = UnityEngine.Screen.safeArea;
 #if UNITY_EDITOR || Unity2018_3_2_or_Older
-      var display = Display.displays[0];
-      screenSize = new Vector2Int(display.systemWidth, display.systemHeight);
+        var display = Display.displays[0];
+        screenSize = new Vector2Int(display.systemWidth, display.systemHeight);
 #else
-      screenSize = new Vector2Int(Screen.width, Screen.height);
+        screenSize = new Vector2Int(Screen.width, Screen.height);
 #endif
-    }
+      }
 
-    //*************************************************************************************************
-    /// <summary>
-    /// 適応
-    /// </summary>
-    //*************************************************************************************************
-    [Conditional("UNITY_EDITOR"), Conditional("UNITY_IOS")]
-    public void Apply() {
       var anchorMin = safeArea.position;
       var anchorMax = safeArea.position + safeArea.size;
       anchorMin.x /= screenSize.x;
@@ -91,16 +85,16 @@ namespace SafeArea {
         adjustScale();
         var heightRate = getHeightRate();
         var newSize = new Rect(PanelRectTrans.rect.x * heightRate, PanelRectTrans.rect.y * heightRate, PanelRectTrans.rect.width * heightRate, PanelRectTrans.rect.height * heightRate);
-        // スケールを縮小した分だけ枠のサイズを広げる
+        // Expand the size of RectTransform by the shrink scale
         PanelRectTrans.sizeDelta = new Vector2((oldSize.width - newSize.width), (oldSize.height - newSize.height));
       }
     }
 
     //*************************************************************************************************
     /// <summary>
-    /// SafeAreaが高さに占める割合を返す
+    /// Returns the ratio of SafeArea to height
     /// </summary>
-    /// <returns>SafeAreaが高さに占める割合</returns>
+    /// <returns>The ratio of SafeArea to height</returns>
     //*************************************************************************************************
     private float getHeightRate() {
       return Mathf.Clamp01(safeArea.height / screenSize.y);
@@ -108,7 +102,7 @@ namespace SafeArea {
 
     //*************************************************************************************************
     /// <summary>
-    /// SafeAreaのサイズにフィットするように、指定したTransformを伸縮させる
+    /// Stretch Local Scale to fit SafeArea size
     /// </summary>
     //*************************************************************************************************
     private void adjustScale() {
@@ -117,9 +111,8 @@ namespace SafeArea {
     }
 
 #if UNITY_EDITOR
-    #region デバッグ用
+    #region ForDebug
     
-    // 端末の向き
     private enum OrientationType {
       Auto = 0,
       Portrait,
@@ -127,22 +120,20 @@ namespace SafeArea {
     }
     private OrientationType orientationType = OrientationType.Auto;
 
-    [SerializeField, Header("Debug: PC上で実行時にも反映する")]
+    [SerializeField, Header("Debug")]
     private bool simulateOnPlay = true;
-    [SerializeField, Header("Debug: シミュレートしたい機種"), Tooltip("実行時は無視されます")]
+    [SerializeField, Header("Debug"), Tooltip("Ignores when Play")]
     private SimulateData.SimulateType simulateType;
-    [SerializeField, Header("Debug: 縦持ちか"), Tooltip("実行時は無視されます")]
+    [SerializeField, Header("Debug"), Tooltip("Ignores when Play")]
     private bool isPortrait;
 
-    // 横持ちか
     private bool isLandscape {
       get {
-        // Editor上での操作時は isPortrait から判定する
         if (orientationType != OrientationType.Auto) {
           return !isPortrait;
         }
 
-        // 実行時は解像度から判定
+        // Judge by Resolution at Play Mode
         var width = UnityEngine.Screen.width;
         var height = UnityEngine.Screen.height;
 
@@ -153,7 +144,7 @@ namespace SafeArea {
 
     //*************************************************************************************************
     /// <summary>
-    /// iPhoneX以降のセーフエリア シミュレーション
+    /// Simulaties at Editor without Play
     /// </summary>
     //*************************************************************************************************
     public void SimulateAtEditor() {
@@ -163,15 +154,15 @@ namespace SafeArea {
       orientationType = isPortrait ? OrientationType.Portrait : OrientationType.Landscape;
       safeArea = getSimulationSafeArea(simulateType);
       screenSize = getSimulationResolution(simulateType);
-      Apply();
+      Apply(isInitScreenSize: false);
     }
 
     //*************************************************************************************************
     /// <summary>
-    /// シミュレート用の解像度を取得
+    /// Returns Resolution for Simulate
     /// </summary>
-    /// <param name="type"シミュレート用の機種></param>
-    /// <returns>シミュレート用の解像度</returns>
+    /// <param name="type">Simulate Type</param>
+    /// <returns>Resolution for Simulate</returns>
     //*************************************************************************************************
     private Vector2Int getSimulationResolution(SimulateData.SimulateType type) {
       var index = (int)type;
@@ -183,10 +174,10 @@ namespace SafeArea {
 
     //*************************************************************************************************
     /// <summary>
-    /// シミュレート用のセーフエリアを取得
+    /// Returns Safe Area for Simulate
     /// </summary>
-    /// <param name="type">シミュレート用の機種</param>
-    /// <returns>シミュレート用のセーフエリア</returns>
+    /// <param name="type">Simulate Type</param>
+    /// <returns>Safe Area for Simulate</returns>
     //*************************************************************************************************
     private Rect getSimulationSafeArea(SimulateData.SimulateType type) {
       return SimulateData.SafeAreaResolutions[(int)type, isLandscape ? 1 : 0];
@@ -194,9 +185,9 @@ namespace SafeArea {
 
     //*************************************************************************************************
     /// <summary>
-    /// 現在のエディタ上の解像度からシミュレートする機種を特定する
+    /// Identify the Simulate Type from the resolution on the current editor
     /// </summary>
-    /// <returns>シミュレートする機種</returns>
+    /// <returns>Target Simulate Type</returns>
     //*************************************************************************************************
     private SimulateData.SimulateType getSimulateTypeFromCurrentResolution() {
       var width = UnityEngine.Screen.width;

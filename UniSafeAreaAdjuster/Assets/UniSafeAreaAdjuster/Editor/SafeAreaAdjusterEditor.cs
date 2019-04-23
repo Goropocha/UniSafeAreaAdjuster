@@ -6,7 +6,7 @@ using UnityEditor;
 namespace SafeArea {
   //*************************************************************************************************
   /// <summary>
-  /// SafeAreaAdjuster Inspector拡張クラス
+  /// SafeAreaAdjuster Inspector Editor
   /// </summary>
   //*************************************************************************************************
   [CustomEditor(typeof(SafeAreaAdjuster))]
@@ -16,7 +16,7 @@ namespace SafeArea {
 
     //*************************************************************************************************
     /// <summary>
-    /// 表示時の通知
+    /// Callback When this game object is enabled
     /// </summary>
     //*************************************************************************************************
     void OnEnable() {
@@ -25,7 +25,7 @@ namespace SafeArea {
 
     //*************************************************************************************************
     /// <summary>
-    /// Inspector 描画
+    /// Inspector drawing
     /// </summary>
     //*************************************************************************************************
     public override void OnInspectorGUI() {
@@ -33,16 +33,14 @@ namespace SafeArea {
 
       EditorGUI.BeginChangeCheck();
 
-      // toggle をマウスでクリックして値を変更する
       EditorGUILayout.Space();
-      toggle = EditorGUILayout.ToggleLeft("Editor上で即シミュレート", toggle);
+      toggle = EditorGUILayout.ToggleLeft("Simulate Now at Editor", toggle);
 
-      // toggle の値が変更されるたびに true になる
+      // True if GUI.changed was set to true, otherwise false.
       if (EditorGUI.EndChangeCheck()) {
         if (toggle) {
           comp.SimulateAtEditor();
         } else {
-          comp.Setup();
           comp.Apply();
         }
       }
