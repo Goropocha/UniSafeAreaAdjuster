@@ -27,7 +27,7 @@ Sample Project was created Unity version 2018.3.13f1.<br>
 4. Add New SafeArea's Resolution (px) to `public static Rect[,] SafeAreaResolutions`. You must match SimulateType and the index of array.
 
 ## Document (Japanese)
-[【Unity】iPhoneX以降のセーフエリアの見栄えをエディタ上で、かつ実行せずに確認・調整できる拡張クラスを作ってみた - Qiita](https://qiita.com/goropocha/items/d5050a0223ead3288ec8)
+[iPhoneX以降のセーフエリアの見栄えをエディタ上で、かつ実行せずに確認・調整できる便利クラスを作成しました](https://goropocha.hatenablog.com/entry/2020/03/26/003011)
 
 ## Version History
 
